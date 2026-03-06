@@ -1,0 +1,48 @@
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Editor / IDE =====
+.vscode/
+.idea/
+*.iml
+
+# ===== Logs =====
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== Env files =====
+.env
+.env.*
+!.env.example
+
+# ===== Archives =====
+*.zip
+*.tar
+*.gz
+*.rar
+
+# ===== Build artifacts =====
+dist/
+out/
+target/
+build/
+
+# ===== Dependency directories =====
+node_modules/
+
+# ===== Runtime / temp =====
+tmp/
+temp/
+*.pid
+*.seed
+
+# ===== Coverage =====
+coverage/
+
+# ===== Local DB / misc =====
+*.sqlite
+*.db

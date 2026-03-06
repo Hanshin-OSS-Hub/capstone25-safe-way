@@ -1,0 +1,11 @@
+# env
+.env
+
+# postgres persistent volume or local dump
+postgres_data/
+pgdata/
+*.sql.bak
+*.dump
+
+# docker
+*.local.yml

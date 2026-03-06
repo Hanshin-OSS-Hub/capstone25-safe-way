@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: safeway-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: safeway
+      POSTGRES_USER: safeway
+      POSTGRES_PASSWORD: REMOVED
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7
+    container_name: safeway-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: safeway-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: REMOVED
+      PGADMIN_DEFAULT_PASSWORD: REMOVED
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  backend:
+    container_name: safeway-backend
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "18080:8080"
+    environment:
+      # 컨테이너 내부에서 postgres는 localhost가 아니라 "서비스명(postgres)" 로 접근합니다.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/safeway
+      SPRING_DATASOURCE_USERNAME: safeway
+      SPRING_DATASOURCE_PASSWORD: REMOVED
+
+      # Redis도 마찬가지로 "redis"
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # (선택) 스프링 포트
+      SERVER_PORT: 8080
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:

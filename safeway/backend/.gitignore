@@ -1,0 +1,34 @@
+# ===== Gradle =====
+.gradle/
+build/
+
+# ===== IntelliJ / Eclipse =====
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# ===== VS Code =====
+.vscode/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+logs/
+*.log
+
+# ===== Env / local settings =====
+.env
+application-local.yml
+application-secret.yml
+application-prod.yml
+
+# ===== Java =====
+*.class
+
+# ===== Generated =====
+bin/
+out/
