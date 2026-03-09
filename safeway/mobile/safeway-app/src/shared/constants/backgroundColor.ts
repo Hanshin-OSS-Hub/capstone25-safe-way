@@ -1,0 +1,1 @@
+export const APP_BG = "#F3F4F6"
