@@ -108,7 +108,7 @@ REMOVED
 
 Password
 
-REMOVED4 7. pgAdmin에서 PostgreSQL 서버 등록
+REMOVED 7. pgAdmin에서 PostgreSQL 서버 등록
 
 pgAdmin 접속 후 아래 순서로 서버를 등록합니다.
 
