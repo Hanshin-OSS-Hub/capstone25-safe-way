@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:15
+    image: postgis/postgis:15-3.4
     container_name: safeway-postgres
     restart: always
     environment:
