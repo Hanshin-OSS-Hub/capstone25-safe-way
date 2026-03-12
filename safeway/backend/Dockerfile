@@ -1,12 +1,12 @@
-# ---- build stage ----
-FROM gradle:8.14-jdk17 AS builder
+# 1. 빌드 단계
+FROM gradle:8.3.3-jdk21 AS build
 WORKDIR /app
 COPY . .
-RUN gradle clean bootJar -x test
+RUN gradle clean build -x test --no-daemon
 
-# ---- run stage ----
-FROM eclipse-temurin:17-jre
+# 2. 런타임 단계
+FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","app.jar"]
