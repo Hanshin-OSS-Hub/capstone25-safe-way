@@ -140,7 +140,7 @@ export default function RouteSearchScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#F6F6F7",
+        backgroundColor: "#F3F4F6",
     },
     contentContainer: {
         paddingHorizontal: 16,
