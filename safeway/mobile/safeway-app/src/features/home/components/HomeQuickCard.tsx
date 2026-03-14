@@ -2,15 +2,18 @@
 import React from "react";
 import { XStack, YStack, Text } from "tamagui";
 import { Home, Building2, Car, AlertCircle } from "lucide-react-native";
+import { router } from "expo-router";
 
 function QuickItem({
                        label,
                        bg,
                        icon,
+                       onPress,
                    }: {
     label: string;
     bg: string;
     icon: React.ReactNode;
+    onPress?: () => void;
 }) {
     return (
         <YStack
@@ -21,6 +24,8 @@ function QuickItem({
             alignItems="center"
             justifyContent="center"
             gap="$2"
+            pressStyle={{ scale: 0.95 }}
+            onPress={onPress}
         >
             {icon}
             <Text fontSize={14} color="#111827">
@@ -68,6 +73,7 @@ export function HomeQuickCard() {
                         label="제보"
                         bg="#FCE7F3"
                         icon={<AlertCircle color="#DB2777" size={26} />}
+                        onPress={() => router.push("/report")}
                     />
                 </XStack>
             </YStack>
