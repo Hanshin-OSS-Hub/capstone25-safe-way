@@ -11,7 +11,8 @@ CREATE TABLE "users" (
     "user_name" varchar(50) NOT NULL,
     "phone_number" varchar(20),
     "created_at" timestamptz DEFAULT (now()),
-    "updated_at" timestamptz DEFAULT (now())
+    "updated_at" timestamptz DEFAULT (now()),
+    "role" varchar(20) DEFAULT 'ROLE_USER' -- admin 관련 컬럼 나중에 제외할지 생각
 );
 
 -- 3. 유저 설정 테이블 (User Settings)
