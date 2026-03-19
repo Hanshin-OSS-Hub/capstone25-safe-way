@@ -8,17 +8,30 @@ export default function TabsLayout() {
             screenOptions={{
                 headerShown: false,
                 tabBarActiveTintColor: "#2563EB",
-                tabBarInactiveTintColor: "#9CA3AF",
+                tabBarInactiveTintColor: "#94A3B8",
                 tabBarStyle: {
-                    height: 80,
+                    height: 84,
                     paddingTop: 10,
-                    paddingBottom: 10,
+                    paddingBottom: 12,
                     borderTopWidth: 1,
-                    borderTopColor: "#E5E7EB",
-                    backgroundColor: "transparent",
+                    borderTopColor: "#E2E8F0",
+                    backgroundColor: "rgba(255,255,255,0.96)",
+                    position: "absolute",
+                    elevation: 0,
+                    shadowColor: "#0F172A",
+                    shadowOpacity: 0.06,
+                    shadowRadius: 10,
                 },
                 tabBarLabelStyle: {
                     fontSize: 12,
+                    fontWeight: "600",
+                    marginTop: 2,
+                },
+                tabBarIconStyle: {
+                    marginTop: 2,
+                },
+                sceneStyle: {
+                    backgroundColor: "#F8FAFC",
                 },
             }}
         >
@@ -26,7 +39,9 @@ export default function TabsLayout() {
                 name="(map)"
                 options={{
                     title: "홈",
-                    tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <Home color={color} size={focused ? 24 : 22} />
+                    ),
                 }}
             />
 
@@ -34,7 +49,9 @@ export default function TabsLayout() {
                 name="(services)"
                 options={{
                     title: "교통약자 서비스",
-                    tabBarIcon: ({ color, size }) => <Users color={color} size={size} />,
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <Users color={color} size={focused ? 24 : 22} />
+                    ),
                 }}
             />
 
@@ -42,7 +59,9 @@ export default function TabsLayout() {
                 name="(favorites)"
                 options={{
                     title: "즐겨찾기",
-                    tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <Heart color={color} size={focused ? 24 : 22} />
+                    ),
                 }}
             />
 
@@ -50,7 +69,9 @@ export default function TabsLayout() {
                 name="(my)"
                 options={{
                     title: "마이",
-                    tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <User color={color} size={focused ? 24 : 22} />
+                    ),
                 }}
             />
         </Tabs>
