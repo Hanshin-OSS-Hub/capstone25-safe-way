@@ -1,48 +1,64 @@
-# ===== OS =====
+===== OS =====
+
 .DS_Store
 Thumbs.db
 
-# ===== Editor / IDE =====
+===== Editor / IDE =====
+
 .vscode/
 .idea/
 *.iml
 
-# ===== Logs =====
-*.log
+===== Logs =====
+
+.log
 logs/
-npm-debug.log*
+npm-debug.log
 yarn-debug.log*
 yarn-error.log*
 
-# ===== Env files =====
+===== Env files =====
+
 .env
 .env.*
 !.env.example
 
-# ===== Archives =====
+===== Archives =====
+
 *.zip
 *.tar
 *.gz
 *.rar
 
-# ===== Build artifacts =====
+===== Build artifacts =====
+
 dist/
 out/
 target/
 build/
 
-# ===== Dependency directories =====
+===== Dependency directories =====
+
 node_modules/
 
-# ===== Runtime / temp =====
+===== Runtime / temp =====
+
 tmp/
 temp/
 *.pid
 *.seed
 
-# ===== Coverage =====
+===== Coverage =====
+
 coverage/
 
-# ===== Local DB / misc =====
+===== Local DB / misc =====
+
 *.sqlite
 *.db
+
+===== SafeWay Docker & Database Data (CRITICAL) =====
+
+도커 컨테이너에서 생성되는 실제 데이터는 깃허브에 올리지 않습니다.
+
+infra/postgres_data/
