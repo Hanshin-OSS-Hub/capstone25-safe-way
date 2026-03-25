@@ -10,7 +10,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 
@@ -21,47 +22,55 @@ public class JwtTokenProvider {
     private String secretKey;
 
     private final long validityInMilliseconds = 1000L * 60 * 60 * 24; // 24시간
-    private Key key;
+    private SecretKey key; // 0.12 버전에서는 SecretKey 타입을 권장
 
     @PostConstruct
     protected void init() {
-        // secretKey를 사용해 암호화 키 초기화
-        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        // secretKey가 32바이트(256비트)보다 짧으면 에러가 날 수 있으니 주의하세요.
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     // 1. 토큰 생성
     public String createToken(Long userId, String role) {
-        Claims claims = Jwts.claims().setSubject(userId.toString());
-        claims.put("role", role);
         Date now = new Date();
+        Date validity = new Date(now.getTime() + validityInMilliseconds);
+
         return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + validityInMilliseconds))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .subject(userId.toString())        // setSubject 대신 subject()
+                .claim("role", role)               // 별도의 Claims 객체 생성 없이 바로 추가 가능
+                .issuedAt(now)                     // setIssuedAt 대신 issuedAt()
+                .expiration(validity)              // setExpiration 대신 expiration()
+                .signWith(key)                     // 알고리즘은 key에 맞춰 자동으로 선택됨
                 .compact();
     }
 
-    // 2. 토큰에서 인증 정보 조회 (이게 없어서 빨간줄이었음)
+    // 2. 토큰에서 인증 정보 조회
     public Authentication getAuthentication(String token) {
         String userId = this.getUserId(token);
-        // 시큐리티에서 쓸 유저 객체 생성
         User principal = new User(userId, "", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
     }
 
     // 3. 토큰에서 유저 ID 추출
     public String getUserId(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build()
-                .parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser()                       // parserBuilder() 대신 parser()
+                .verifyWith(key)                   // setSigningKey 대신 verifyWith()
+                .build()
+                .parseSignedClaims(token)          // parseClaimsJws 대신 parseSignedClaims()
+                .getPayload()                      // getBody 대신 getPayload()
+                .getSubject();
     }
 
-    // 4. 토큰 유효성 검사 (이게 없어서 빨간줄이었음)
+    // 4. 토큰 유효성 검사
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return !claims.getBody().getExpiration().before(new Date());
+            Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
+            // 서명 오류, 만료, 형식이 맞지 않는 토큰 등은 여기서 모두 걸러집니다.
             return false;
         }
     }
