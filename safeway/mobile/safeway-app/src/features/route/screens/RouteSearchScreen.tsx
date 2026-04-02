@@ -16,9 +16,9 @@ import {
     Navigation,
 } from "lucide-react-native";
 
-import LocationInputCard from "./components/LocationInputCard";
-import RecentSearchSection from "./components/RecentSearchSection";
-import FavoritePlacesSection from "./components/FavoritePlacesSection";
+import LocationInputCard from "../components/LocationInputCard";
+import RecentSearchSection from "../components/RecentSearchSection";
+import FavoritePlacesSection from "../components/FavoritePlacesSection";
 
 export default function RouteSearchScreen() {
     const [start, setStart] = useState("");
@@ -57,12 +57,13 @@ export default function RouteSearchScreen() {
             return;
         }
 
-        /**
-         * TODO:
-         * 추후 백엔드 경로 탐색 API 연결
-         * ex) router.push({ pathname: "/route", params: { start, end } })
-         */
-        Alert.alert("경로 찾기", `${start} → ${end}`);
+        router.push({
+            pathname: "/route",
+            params: {
+                start,
+                end,
+            },
+        });
     };
 
     return (
