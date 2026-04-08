@@ -29,4 +29,10 @@ public class KakaoController {
         // 2. 서비스 로그인 및 JWT 발급
         return authService.kakaoLogin(accessToken);
     }
+
+    @GetMapping("/api/location/address")
+    public Map<String, Object> getAddress(@RequestParam String x, @RequestParam String y) {
+        // x: 경도(127.xxx), y: 위도(37.xxx)
+        return kakaoService.getAddressFromCoords(x, y);
+    }
 }

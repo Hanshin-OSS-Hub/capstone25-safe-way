@@ -41,4 +41,19 @@ public class KakaoService {
 
         return response.get("access_token").toString();
     }
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getAddressFromCoords(String x, String y) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .scheme("https")
+                        .host("dapi.kakao.com")
+                        .path("/v2/local/geo/coord2address.json")
+                        .queryParam("x", x) // 경도
+                        .queryParam("y", y) // 위도
+                        .build())
+                .header("Authorization", "KakaoAK REMOVED")
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+    }
 }

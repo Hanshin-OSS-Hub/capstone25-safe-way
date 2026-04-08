@@ -31,7 +31,12 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // 2. 로그인 관련 경로는 모두 허용 (permitAll)
-                        .requestMatchers("/auth/**", "/callback/**").permitAll()
+                        .requestMatchers("/auth/**",
+                                "/callback/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/api/location/**").permitAll()
                         // 3. 나머지는 로그인(토큰)이 있어야만 접근 가능하게 설정
                         .anyRequest().authenticated()
                 )
