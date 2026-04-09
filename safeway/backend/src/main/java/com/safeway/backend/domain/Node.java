@@ -11,9 +11,10 @@ import org.locationtech.jts.geom.Point; // 중요: 공간 데이터용
     @NoArgsConstructor
     public class Node {
         @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+        @Column(name = "node_id")
         private Long nodeId;
 
-        @Column(nullable = false, columnDefinition = "geometry(Point, 4326)")
+        @Column(name ="geom_node",nullable = false, columnDefinition = "geometry(Point, 4326)")
         private Point geomNode;
     }

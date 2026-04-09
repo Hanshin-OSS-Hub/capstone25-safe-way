@@ -11,8 +11,4 @@ public class HelloController {
         return "Safeway backend is running!";
     }
 
-    @GetMapping("/health")
-    public String health() {
-        return "OK";
-    }
 }

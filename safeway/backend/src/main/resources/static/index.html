@@ -2,14 +2,28 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Safeway 로그인</title>
+    <title>Safeway 테스트 센터</title>
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .btn-container { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .btn { padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 250px; text-decoration: none; display: inline-block; }
+        .kakao-btn { background: #FEE500; color: #3c1e1e; }
+        .swagger-btn { background: #85ea2d; color: #1b1b1b; }
+    </style>
 </head>
 <body>
-<h2>Safeway 테스트 페이지</h2>
-<button onclick="loginWithKakao()" style="padding:10px 20px; background:#FEE500; border:none; border-radius:5px; cursor:pointer;">
-    카카오 로그인
-</button>
+<h2> Safeway 백엔드 테스트 센터</h2>
+
+<div class="btn-container">
+    <button onclick="loginWithKakao()" class="btn kakao-btn">
+        카카오 로그인 테스트
+    </button>
+
+    <a href="/swagger-ui/index.html" class="btn swagger-btn">
+        API 문서 (Swagger) 바로가기
+    </a>
+</div>
 
 <script>
     Kakao.init('REMOVED'); // JavaScript 키
