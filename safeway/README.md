@@ -158,6 +158,7 @@ infra/postgres/init/init.sql
 ```
 
 PostgreSQL 컨테이너가 **처음 생성될 때 자동 실행됩니다.**
+Spring Boot가 테이블을 자동 생성하는 구조는 아니며, `spring.jpa.hibernate.ddl-auto=none` 설정이라 `init.sql`이 스키마 생성의 기준입니다.
 
 즉 다음 명령어 실행 시
 
@@ -226,6 +227,7 @@ SELECT * FROM users;
 # 11. init.sql이 적용되지 않을 때
 
 PostgreSQL의 `init.sql`은 **DB가 최초 생성될 때만 실행됩니다.**
+따라서 컨테이너를 재시작만 하면 다시 실행되지 않고, 스키마를 새로 반영하려면 볼륨까지 지운 뒤 재생성해야 합니다.
 
 이미 DB가 생성된 경우 SQL이 다시 실행되지 않을 수 있습니다.
 

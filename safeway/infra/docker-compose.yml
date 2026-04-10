@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgis/postgis:15-3.4
+    image: pgrouting/pgrouting:15-3.5-main
     container_name: safeway-postgres
     restart: always
     environment:
@@ -10,6 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - postgres_data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d
 
   redis:
