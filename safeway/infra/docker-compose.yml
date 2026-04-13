@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: pgrouting/pgrouting:15-3.5-main
+    image: postgis/postgis:15-3.4
     container_name: safeway-postgres
     restart: always
     environment:
@@ -8,9 +8,8 @@ services:
       POSTGRES_USER: safeway
       POSTGRES_PASSWORD: REMOVED
     ports:
-      - "15432:5432"
+      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d
 
   redis:
@@ -18,7 +17,7 @@ services:
     container_name: safeway-redis
     restart: always
     ports:
-      - "16379:6379"
+      - "6379:6379"
 
   pgadmin:
     image: dpage/pgadmin4
