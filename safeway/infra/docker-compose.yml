@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: safeway
       POSTGRES_PASSWORD: REMOVED
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d
@@ -18,7 +18,7 @@ services:
     container_name: safeway-redis
     restart: always
     ports:
-      - "6379:6379"
+      - "16379:6379"
 
   pgadmin:
     image: dpage/pgadmin4
