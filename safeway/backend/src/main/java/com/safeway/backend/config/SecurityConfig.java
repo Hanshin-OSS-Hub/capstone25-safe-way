@@ -40,6 +40,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/api/location/**",
+                                "/api/nodes/**",
                                 "/api/path/**",
                                 "/error").permitAll()
                         // 3. 나머지는 로그인(토큰)이 있어야만 접근 가능하게 설정
