@@ -113,13 +113,14 @@ export default function RouteResultScreen() {
                 parsedStartLat
             );
 
-            console.log("출발지 convert 결과:", startNodeResult);
+
 
             const endNodeResult = await convertCoordinateToNode(
                 parsedEndLng,
                 parsedEndLat
             );
 
+            console.log("출발지 convert 결과:", startNodeResult);
             console.log("도착지 convert 결과:", endNodeResult);
             console.log("startNodeId:", startNodeResult?.nodeId);
             console.log("endNodeId:", endNodeResult?.nodeId);
