@@ -1,8 +1,13 @@
-import { useMemo, useRef, useState } from "react";
+// 이 코드는 경로 결과 화면에서 출발지와 도착지 좌표를 기준으로
+// 노드 변환 API와 안전 경로 API를 호출한 뒤
+// 카카오맵 WebView에 실제 경로를 렌더링하는 컴포넌트입니다.
+// 출발지와 도착지 마커는 convert API의 geomWkt 결과를 사용하여
+// 경로선과 자연스럽게 맞도록 보정합니다.
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+    ActivityIndicator,
     Alert,
-    Pressable,
-    ScrollView,
     StyleSheet,
     View,
 } from "react-native";
@@ -14,8 +19,24 @@ import { KAKAO_JS_KEY } from "@/src/shared/constants/env";
 import RouteTopSearchBar from "@/src/features/route/components/RouteTopSearchBar";
 import RouteOptionCard from "@/src/features/route/components/RouteOptionCard";
 import RouteBottomActionBar from "@/src/features/route/components/RouteBottomActionBar";
+import {
+    convertCoordinateToNode,
+    fetchSafePath,
+} from "@/src/features/route/api/pathApi";
+import { buildPathCoordinates } from "@/src/features/route/utils/buildPathCoordinates";
+import { parsePointWkt } from "@/src/features/route/utils/parseWkt";
 
 type RouteOptionType = "manual" | "electric";
+
+type MapPathPoint = {
+    lat: number;
+    lng: number;
+};
+
+type MarkerPoint = {
+    lat: number;
+    lng: number;
+};
 
 const ROUTE_OPTIONS = {
     manual: {
@@ -35,10 +56,25 @@ const ROUTE_OPTIONS = {
 export default function RouteResultScreen() {
     const webViewRef = useRef<WebView>(null);
     const [selectedType, setSelectedType] = useState<RouteOptionType>("electric");
+    const [path, setPath] = useState<MapPathPoint[]>([]);
+    const [isLoadingRoute, setIsLoadingRoute] = useState(true);
+    const [startMarker, setStartMarker] = useState<MarkerPoint | null>(null);
+    const [endMarker, setEndMarker] = useState<MarkerPoint | null>(null);
 
-    const { start, end } = useLocalSearchParams<{
+    const {
+        start,
+        end,
+        startLat,
+        startLng,
+        endLat,
+        endLng,
+    } = useLocalSearchParams<{
         start?: string;
         end?: string;
+        startLat?: string;
+        startLng?: string;
+        endLat?: string;
+        endLng?: string;
     }>();
 
     const startName =
@@ -51,43 +87,176 @@ export default function RouteResultScreen() {
             ? end
             : "도착지";
 
+    const parsedStartLat = Number(startLat);
+    const parsedStartLng = Number(startLng);
+    const parsedEndLat = Number(endLat);
+    const parsedEndLng = Number(endLng);
+
+    // 출발지와 도착지 좌표를 기준으로 노드 변환 및 안전 경로 조회를 수행하는 함수
+    const loadSafeRoute = async () => {
+        if (
+            Number.isNaN(parsedStartLat) ||
+            Number.isNaN(parsedStartLng) ||
+            Number.isNaN(parsedEndLat) ||
+            Number.isNaN(parsedEndLng)
+        ) {
+            Alert.alert("경로 조회 실패", "출발지 또는 도착지 좌표가 올바르지 않습니다.");
+            setIsLoadingRoute(false);
+            return;
+        }
+
+        try {
+            setIsLoadingRoute(true);
+
+            const startNodeResult = await convertCoordinateToNode(
+                parsedStartLng,
+                parsedStartLat
+            );
+
+            console.log("출발지 convert 결과:", startNodeResult);
+
+            const endNodeResult = await convertCoordinateToNode(
+                parsedEndLng,
+                parsedEndLat
+            );
+
+            console.log("도착지 convert 결과:", endNodeResult);
+            console.log("startNodeId:", startNodeResult?.nodeId);
+            console.log("endNodeId:", endNodeResult?.nodeId);
+            const startNodeId = Number(startNodeResult.nodeId);
+            const endNodeId = Number(endNodeResult.nodeId);
+
+            console.log("safe API 요청값:", {
+                startNodeId,
+                endNodeId,
+            });
+
+            try {
+                const safePath = await fetchSafePath(startNodeId, endNodeId);
+                console.log("safePath 응답:", safePath);
+            } catch (error) {
+                console.error("safe API 에러:", error);
+            }
+
+            const safePath = await fetchSafePath(
+                startNodeResult.nodeId,
+                endNodeResult.nodeId
+            );
+
+            const routeCoordinates = buildPathCoordinates(safePath);
+
+            const mappedPath = routeCoordinates.map((coordinate) => ({
+                lat: coordinate.latitude,
+                lng: coordinate.longitude,
+            }));
+
+            const parsedStartMarker = parsePointWkt(startNodeResult.geomWkt);
+            const parsedEndMarker = parsePointWkt(endNodeResult.geomWkt);
+
+            setPath(mappedPath);
+
+            setStartMarker(
+                parsedStartMarker
+                    ? {
+                        lat: parsedStartMarker.latitude,
+                        lng: parsedStartMarker.longitude,
+                    }
+                    : mappedPath[0]
+                        ? {
+                            lat: mappedPath[0].lat,
+                            lng: mappedPath[0].lng,
+                        }
+                        : {
+                            lat: parsedStartLat,
+                            lng: parsedStartLng,
+                        }
+            );
+
+            setEndMarker(
+                parsedEndMarker
+                    ? {
+                        lat: parsedEndMarker.latitude,
+                        lng: parsedEndMarker.longitude,
+                    }
+                    : mappedPath[mappedPath.length - 1]
+                        ? {
+                            lat: mappedPath[mappedPath.length - 1].lat,
+                            lng: mappedPath[mappedPath.length - 1].lng,
+                        }
+                        : {
+                            lat: parsedEndLat,
+                            lng: parsedEndLng,
+                        }
+            );
+        } catch (error) {
+            console.error("안전 경로 조회 실패:", error);
+            Alert.alert("경로 조회 실패", "안전 경로를 불러오는 중 문제가 발생했습니다.");
+        } finally {
+            setIsLoadingRoute(false);
+        }
+    };
+
+    useEffect(() => {
+        loadSafeRoute();
+    }, [parsedStartLat, parsedStartLng, parsedEndLat, parsedEndLng]);
+
     const routeData = useMemo(() => {
         return {
             start: {
-                lat: 37.2073,
-                lng: 127.0337,
+                lat: startMarker?.lat ?? parsedStartLat,
+                lng: startMarker?.lng ?? parsedStartLng,
                 name: startName,
             },
             end: {
-                lat: 37.2641,
-                lng: 126.9981,
+                lat: endMarker?.lat ?? parsedEndLat,
+                lng: endMarker?.lng ?? parsedEndLng,
                 name: endName,
             },
-            path: [
-                { lat: 37.2073, lng: 127.0337 },
-                { lat: 37.2082, lng: 127.0295 },
-                { lat: 37.2103, lng: 127.0201 },
-                { lat: 37.2184, lng: 127.0107 },
-                { lat: 37.2295, lng: 127.0001 },
-                { lat: 37.2411, lng: 126.9954 },
-                { lat: 37.2534, lng: 126.9966 },
-                { lat: 37.2641, lng: 126.9981 },
-            ],
+            path,
         };
-    }, [startName, endName]);
+    }, [
+        startMarker,
+        endMarker,
+        parsedStartLat,
+        parsedStartLng,
+        parsedEndLat,
+        parsedEndLng,
+        startName,
+        endName,
+        path,
+    ]);
 
     const html = useMemo(() => {
+        if (path.length === 0) {
+            return "";
+        }
+
         return createRouteMapHtml({
             appKey: KAKAO_JS_KEY,
             start: routeData.start,
             end: routeData.end,
             path: routeData.path,
         });
-    }, [routeData]);
+    }, [routeData, path]);
+
+    if (isLoadingRoute) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" />
+            </View>
+        );
+    }
+
+    if (path.length === 0) {
+        return (
+            <View style={styles.loadingContainer} />
+        );
+    }
 
     return (
         <View style={styles.container}>
             <WebView
+                key={JSON.stringify(routeData)}
                 ref={webViewRef}
                 originWhitelist={["*"]}
                 source={{ html }}
@@ -140,7 +309,7 @@ export default function RouteResultScreen() {
 
                     <RouteBottomActionBar
                         onPressStartGuide={() => {
-                            Alert.alert("안내 시작", "추후 안내 시작 기능과 연결할 예정이야.");
+                            Alert.alert("안내 시작", "추후 안내 시작 기능과 연결할 예정입니다.");
                         }}
                     />
                 </View>
@@ -174,9 +343,10 @@ const styles = StyleSheet.create({
     bottomArea: {
         paddingBottom: 0,
     },
-    cardList: {
-        paddingHorizontal: 16,
-        gap: 12,
-        paddingBottom: 14,
+    loadingContainer: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#FFFFFF",
     },
 });

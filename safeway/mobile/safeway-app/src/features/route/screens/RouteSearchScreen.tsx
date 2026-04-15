@@ -1,8 +1,8 @@
-// 이 코드는 경로 검색 화면에서 현재 위치 버튼을 눌렀을 때
-// 위치 권한 요청, 현재 좌표 조회, 주소 변환 API 호출을 통해
-// 출발지 입력값을 현재 주소로 설정하는 컴포넌트입니다.
+// 이 코드는 경로 검색 화면에서 출발지와 도착지 검색 결과를
+// 이름과 좌표까지 함께 저장하고,
+// 장소 검색 화면 이동 시 기존 출발지와 도착지 정보를 함께 전달하는 컴포넌트입니다.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Alert,
     Pressable,
@@ -11,7 +11,7 @@ import {
     Text,
     View,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
     ArrowLeft,
     MapPin,
@@ -24,33 +24,96 @@ import RecentSearchSection from "../components/RecentSearchSection";
 import FavoritePlacesSection from "../components/FavoritePlacesSection";
 import { getAddressByCoordinate } from "@/src/features/location/api/locationApi";
 
+type SelectedPlace = {
+    name: string;
+    latitude: number;
+    longitude: number;
+};
+
 export default function RouteSearchScreen() {
-    const [start, setStart] = useState("");
-    const [end, setEnd] = useState("");
+    const [start, setStart] = useState<SelectedPlace | null>(null);
+    const [end, setEnd] = useState<SelectedPlace | null>(null);
     const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] = useState(false);
 
-    // 출발지 입력 카드를 눌렀을 때 실행되는 함수
+    const {
+        startName,
+        startLat,
+        startLng,
+        endName,
+        endLat,
+        endLng,
+    } = useLocalSearchParams<{
+        startName?: string;
+        startLat?: string;
+        startLng?: string;
+        endName?: string;
+        endLat?: string;
+        endLng?: string;
+    }>();
+
+    // 라우트 파라미터로 전달된 출발지와 도착지 정보를 상태에 반영하는 함수
+    useEffect(() => {
+        if (startName && startLat && startLng) {
+            const parsedStartLat = Number(startLat);
+            const parsedStartLng = Number(startLng);
+
+            if (!Number.isNaN(parsedStartLat) && !Number.isNaN(parsedStartLng)) {
+                setStart({
+                    name: startName,
+                    latitude: parsedStartLat,
+                    longitude: parsedStartLng,
+                });
+            }
+        }
+
+        if (endName && endLat && endLng) {
+            const parsedEndLat = Number(endLat);
+            const parsedEndLng = Number(endLng);
+
+            if (!Number.isNaN(parsedEndLat) && !Number.isNaN(parsedEndLng)) {
+                setEnd({
+                    name: endName,
+                    latitude: parsedEndLat,
+                    longitude: parsedEndLng,
+                });
+            }
+        }
+    }, [startName, startLat, startLng, endName, endLat, endLng]);
+
+    // 출발지 입력 카드를 눌렀을 때 장소 검색 화면으로 이동하는 함수
     const handlePressStart = () => {
-        /**
-         * TODO:
-         * 추후 장소 검색 페이지 연결
-         * ex) router.push("/search/location?field=start")
-         */
-        Alert.alert("출발지 입력", "추후 장소 검색 화면과 연결할 예정입니다.");
+        router.push({
+            pathname: "/search/location",
+            params: {
+                field: "start",
+                startName: start?.name ?? "",
+                startLat: start ? String(start.latitude) : "",
+                startLng: start ? String(start.longitude) : "",
+                endName: end?.name ?? "",
+                endLat: end ? String(end.latitude) : "",
+                endLng: end ? String(end.longitude) : "",
+            },
+        });
     };
 
-    // 도착지 입력 카드를 눌렀을 때 실행되는 함수
+    // 도착지 입력 카드를 눌렀을 때 장소 검색 화면으로 이동하는 함수
     const handlePressEnd = () => {
-        /**
-         * TODO:
-         * 추후 장소 검색 페이지 연결
-         * ex) router.push("/search/location?field=end")
-         */
-        Alert.alert("도착지 입력", "추후 장소 검색 화면과 연결할 예정입니다.");
+        router.push({
+            pathname: "/search/location",
+            params: {
+                field: "end",
+                startName: start?.name ?? "",
+                startLat: start ? String(start.latitude) : "",
+                startLng: start ? String(start.longitude) : "",
+                endName: end?.name ?? "",
+                endLat: end ? String(end.latitude) : "",
+                endLng: end ? String(end.longitude) : "",
+            },
+        });
     };
 
     // 현재 위치 권한을 요청하고 좌표를 받아온 뒤
-    // 주소 변환 API를 호출하여 출발지 값을 설정하는 함수
+    // 주소 변환 API를 호출하여 출발지 값과 현재 좌표를 설정하는 함수
     const handleUseCurrentLocation = async () => {
         try {
             setIsLoadingCurrentLocation(true);
@@ -76,7 +139,11 @@ export default function RouteSearchScreen() {
                 return;
             }
 
-            setStart(resolvedAddress.roadAddress ?? resolvedAddress.fullAddress);
+            setStart({
+                name: resolvedAddress.roadAddress ?? resolvedAddress.fullAddress,
+                latitude,
+                longitude,
+            });
         } catch (error) {
             console.error("현재 위치 조회 실패:", error);
             Alert.alert("오류", "현재 위치를 불러오는 중 문제가 발생했습니다.");
@@ -85,7 +152,8 @@ export default function RouteSearchScreen() {
         }
     };
 
-    // 출발지와 도착지 입력 여부를 확인한 뒤 경로 검색 결과 화면으로 이동하는 함수
+    // 출발지와 도착지 입력 여부를 확인한 뒤
+    // 이름과 좌표 데이터를 함께 경로 검색 결과 화면으로 전달하는 함수
     const handleSearchRoute = () => {
         if (!start || !end) {
             Alert.alert("안내", "출발지와 도착지를 모두 입력해줘.");
@@ -95,8 +163,12 @@ export default function RouteSearchScreen() {
         router.push({
             pathname: "/route",
             params: {
-                start,
-                end,
+                start: start.name,
+                end: end.name,
+                startLat: String(start.latitude),
+                startLng: String(start.longitude),
+                endLat: String(end.latitude),
+                endLng: String(end.longitude),
             },
         });
     };
@@ -117,7 +189,7 @@ export default function RouteSearchScreen() {
             <View style={styles.formSection}>
                 <LocationInputCard
                     label="출발지 입력"
-                    value={start}
+                    value={start?.name ?? ""}
                     borderColor="#93C5FD"
                     onPress={handlePressStart}
                     icon={
@@ -143,7 +215,7 @@ export default function RouteSearchScreen() {
 
                 <LocationInputCard
                     label="도착지 입력"
-                    value={end}
+                    value={end?.name ?? ""}
                     borderColor="#FBBF24"
                     onPress={handlePressEnd}
                     icon={
@@ -160,19 +232,27 @@ export default function RouteSearchScreen() {
 
             <RecentSearchSection
                 onPressItem={(item) => {
-                    setStart(item.from);
-                    setEnd(item.to);
+                    setStart({
+                        name: item.from,
+                        latitude: 37.205413,
+                        longitude: 127.063431,
+                    });
+
+                    setEnd({
+                        name: item.to,
+                        latitude: 37.2105,
+                        longitude: 127.071,
+                    });
                 }}
             />
 
             <FavoritePlacesSection
                 onPressItem={(item) => {
-                    /**
-                     * TODO:
-                     * 추후 즐겨찾기 선택 시 출발/도착지 어느 쪽에 넣을지
-                     * 선택 바텀시트 또는 상세 흐름 추가 가능
-                     */
-                    setEnd(item.name);
+                    setEnd({
+                        name: item.name,
+                        latitude: 37.2105,
+                        longitude: 127.071,
+                    });
                 }}
             />
         </ScrollView>
