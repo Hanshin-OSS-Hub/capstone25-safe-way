@@ -31,6 +31,12 @@ public class PathController {
         return pathService.getSafePath(startNode, endNode);
     }
 
+    /**
+     * 좌표 근처 노드 찾기 api
+     * @param lon 경도
+     * @param lat 위도
+     * @return 근처 nodeId, node까지의 거리, node의 좌표값
+     */
     @GetMapping("/convert")
     public ResponseEntity<NodeConvertResponse> convertToNode(
             @RequestParam Double lon,

@@ -1,5 +1,6 @@
 package com.safeway.backend.service;
 import com.safeway.backend.service.dto.KakaoUserResponse;
+import com.safeway.backend.service.dto.PlaceSearchResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -7,7 +8,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,5 +58,36 @@ public class KakaoService {
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PlaceSearchResponse> searchPlaces(String keyword) {
+        // 1. 카카오 API 호출 (WebClient 사용)
+        Map<String, Object> response = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .scheme("https")
+                        .host("dapi.kakao.com")
+                        .path("/v2/local/search/keyword.json")
+                        .queryParam("query", keyword) // 사용자가 입력한 키워드 (예: 병점역)
+                        .build())
+                .header("Authorization", "KakaoAK REMOVED") // 기존 키 사용
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block(); // 결과를 기다림
+
+        // 2. 결과 데이터(documents) 추출
+        // 카카오는 검색 결과를 "documents"라는 키값에 리스트로 담아줍니다.
+        List<Map<String, Object>> documents = (List<Map<String, Object>>) response.get("documents");
+
+        // 3. 받은 결과를 PlaceSearchResponse DTO 리스트로 변환
+        return documents.stream().map(doc -> PlaceSearchResponse.builder()
+                .placeName((String) doc.get("place_name"))
+                .addressName((String) doc.get("address_name"))
+                .roadAddressName((String) doc.get("road_address_name"))
+                .lon((String) doc.get("x")) // 카카오 x = 경도
+                .lat((String) doc.get("y")) // 카카오 y = 위도
+                .categoryName((String) doc.get("category_name"))
+                .build()
+        ).collect(Collectors.toList());
     }
 }
