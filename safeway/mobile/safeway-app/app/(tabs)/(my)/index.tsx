@@ -392,7 +392,6 @@ const styles = StyleSheet.create({
     loginContainer: {
         flex: 1,
         paddingHorizontal: 24,
-        backgroundColor: "#F8FAFC",
     },
     logoSection: {
         alignItems: "center",
