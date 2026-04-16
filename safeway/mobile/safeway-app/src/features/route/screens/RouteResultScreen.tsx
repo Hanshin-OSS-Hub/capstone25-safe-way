@@ -4,7 +4,7 @@
 // 출발지와 도착지 마커는 convert API의 geomWkt 결과를 사용하여
 // 경로선과 자연스럽게 맞도록 보정합니다.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -93,7 +93,7 @@ export default function RouteResultScreen() {
     const parsedEndLng = Number(endLng);
 
     // 출발지와 도착지 좌표를 기준으로 노드 변환 및 안전 경로 조회를 수행하는 함수
-    const loadSafeRoute = async () => {
+    const loadSafeRoute = useCallback(async () => {
         if (
             Number.isNaN(parsedStartLat) ||
             Number.isNaN(parsedStartLng) ||
@@ -195,11 +195,11 @@ export default function RouteResultScreen() {
         } finally {
             setIsLoadingRoute(false);
         }
-    };
+    }, [parsedEndLat, parsedEndLng, parsedStartLat, parsedStartLng]);
 
     useEffect(() => {
         loadSafeRoute();
-    }, [parsedStartLat, parsedStartLng, parsedEndLat, parsedEndLng]);
+    }, [loadSafeRoute]);
 
     const routeData = useMemo(() => {
         return {

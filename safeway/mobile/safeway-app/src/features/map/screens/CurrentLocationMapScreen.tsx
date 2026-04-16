@@ -37,7 +37,7 @@ export default function CurrentLocationMapScreen() {
                 longitude: current.coords.longitude,
                 name: "현재 위치",
             });
-        } catch (error) {
+        } catch {
             setLocation(FALLBACK_LOCATION);
         } finally {
             setLoading(false);

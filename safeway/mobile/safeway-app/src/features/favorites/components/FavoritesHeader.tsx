@@ -1,43 +1,47 @@
-// 이 코드는 즐겨찾기 페이지에서 사용하는 헤더 컴포넌트입니다.
-// 기존 PageHeader 구조를 유지하면서 오른쪽에 버튼(플로팅 + 버튼 등)을 추가할 수 있도록 확장했습니다.
-
-import { XStack, YStack, Text } from "tamagui"
+// 이 코드는 즐겨찾기 화면의 제목, 설명, 오른쪽 액션 영역을 보여주는 헤더 컴포넌트 코드입니다.
+import type { ReactNode } from "react"
+import { StyleSheet, Text, View } from "react-native"
 
 type Props = {
     title: string
     description?: string
-    rightElement?: React.ReactNode
+    rightElement?: ReactNode
 }
 
+// 즐겨찾기 화면 상단 헤더를 렌더링하는 함수입니다.
 export default function FavoritesHeader({ title, description, rightElement }: Props) {
-    // 제목/설명 + 오른쪽 액션 버튼을 함께 렌더링하는 헤더 컴포넌트
     return (
-        <XStack justifyContent="space-between" alignItems="flex-start">
+        <View style={styles.container}>
+            <View style={styles.textArea}>
+                <Text style={styles.title}>{title}</Text>
+                {description ? <Text style={styles.description}>{description}</Text> : null}
+            </View>
 
-            {/* 왼쪽 (기존 PageHeader 구조 유지) */}
-            <YStack gap={6} flex={1} paddingRight={12}>
-                <Text
-                    mt="$1"
-                    fontSize={22}
-                    fontWeight="700"
-                    color="#111827"
-                >
-                    {title}
-                </Text>
-
-                {description && (
-                    <Text
-                        mb="$2"
-                        fontSize={14}
-                        color="#6B7280"
-                    >
-                        {description}
-                    </Text>
-                )}
-            </YStack>
-
-            {/* 오른쪽 (버튼 등) */}
             {rightElement}
-        </XStack>
+        </View>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+    },
+    textArea: {
+        flex: 1,
+        paddingRight: 12,
+        gap: 6,
+    },
+    title: {
+        marginTop: 4,
+        fontSize: 22,
+        fontWeight: "700",
+        color: "#111827",
+    },
+    description: {
+        marginBottom: 8,
+        fontSize: 14,
+        color: "#6B7280",
+    },
+})

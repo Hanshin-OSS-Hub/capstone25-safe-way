@@ -3,7 +3,6 @@ import { Stack } from "expo-router"
 import { useColorScheme } from "react-native"
 import { TamaguiProvider } from "tamagui"
 import { useFonts } from "expo-font"
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"
 
 import { tamaguiConfig } from "../tamagui.config"
 
