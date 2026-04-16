@@ -43,13 +43,13 @@ const ROUTE_OPTIONS = {
         title: "수동 휠체어",
         subtitle: "경사 낮은 경로",
         duration: "24분",
-        distance: "2.8km",
+        distance: "384m",
     },
     electric: {
         title: "전기 휠체어",
         subtitle: "이동시간 우선",
         duration: "18분",
-        distance: "2.8km",
+        distance: "384m",
     },
 };
 
