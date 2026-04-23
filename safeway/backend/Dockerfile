@@ -7,6 +7,6 @@ RUN gradle clean build -x test --no-daemon
 # 2. 런타임 단계
 FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY --from=build /app/build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","app.jar"]
