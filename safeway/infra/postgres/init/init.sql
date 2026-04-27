@@ -31,9 +31,10 @@ CREATE TABLE IF NOT EXISTS "users" (
 -- users와 1:1 관계
 -- =========================================================
 CREATE TABLE IF NOT EXISTS "user_settings" (
-    "user_id" BIGINT PRIMARY KEY REFERENCES "users" ("user_id") ON DELETE CASCADE, -- 사용자 PK이자 FK
-    "wheelchair_type" CHAR(1),                                                      -- 휠체어 타입
-    "max_slope_limit" NUMERIC(4,2) CHECK ("max_slope_limit" >= 0)                   -- 허용 최대 경사도
+    "user_id" BIGINT PRIMARY KEY REFERENCES "users" ("user_id") ON DELETE CASCADE,
+    -- M: 수동, E: 전동, C: 목발/보행보조기 (카테고리 확장)
+    "mobility_type" CHAR(1) DEFAULT 'M' CHECK ("mobility_type" IN ('M', 'E', 'C')), 
+    "max_slope_limit" NUMERIC(4,2) DEFAULT 10.0 CHECK ("max_slope_limit" >= 0)
 );
 
 
@@ -64,6 +65,7 @@ CREATE TABLE IF NOT EXISTS "edges" (
     "geom_edges" GEOMETRY(LineString, 4326) NOT NULL,                       -- 도로/경로 선형 정보
     "distance_m" NUMERIC(10,2) NOT NULL,                                    -- 거리(m)
     "avg_slope_percent" NUMERIC(5,2) NOT NULL DEFAULT 0,                    -- 평균 경사도(%)
+    "max_slope_percent" NUMERIC(5,2) NOT NULL DEFAULT 0,					-- 최대 경사도(%)
     "width_m" NUMERIC(4,2),                                                 -- 도로 폭(m)
     "is_accessible" BOOLEAN NOT NULL DEFAULT TRUE,                          -- 접근 가능 여부
     "safety_cost" DOUBLE PRECISION NOT NULL DEFAULT 0,                      -- 추가 안전 비용(확장용)
