@@ -116,13 +116,12 @@ BEGIN
         slope := 0;
     END IF;
 
-    -- 오르막이면 강한 패널티
-    IF slope > 0 THEN
-        RETURN distance * (1.0 + (POWER(slope, 2) / 10.0));
-    END IF;
-
-    -- 내리막이면 약한 패널티 또는 거의 거리 위주
-    RETURN distance * (1.0 + (ABS(slope) / 20.0));
+    RETURN
+        distance * (
+            1.0
+            + (GREATEST(slope, 0) * 0.25)
+            + (GREATEST(-slope, 0) * 0.05)
+        );
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
