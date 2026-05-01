@@ -1,3 +1,4 @@
+// 이 코드는 Kakao Map JavaScript API를 WebView에서 렌더링하고 React Native 위치 메시지로 현재 위치 마커를 갱신하는 HTML 생성 코드입니다.
 type MapPoint = {
     lat: number;
     lng: number;
@@ -6,28 +7,24 @@ type MapPoint = {
 
 type MapHtmlParams = {
     appKey: string;
-
-    // 기존 현재 위치 마커용
     latitude?: number;
     longitude?: number;
     markerTitle?: string;
-
-    // 경로 표시용
     start?: MapPoint;
     end?: MapPoint;
     path?: MapPoint[];
 };
 
-// 카카오맵을 WebView로 띄우기 위한 HTML 문자열 생성 함수
+// 카카오맵을 WebView로 띄우기 위한 HTML 문자열을 생성하는 함수입니다.
 export function createKakaoMapHtml({
-                                       appKey,
-                                       latitude,
-                                       longitude,
-                                       markerTitle = "현재 위치",
-                                       start,
-                                       end,
-                                       path = [],
-                                   }: MapHtmlParams) {
+    appKey,
+    latitude,
+    longitude,
+    markerTitle = "현재 위치",
+    start,
+    end,
+    path = [],
+}: MapHtmlParams) {
     return `
   <!DOCTYPE html>
   <html>
@@ -61,10 +58,8 @@ export function createKakaoMapHtml({
           const startData = ${JSON.stringify(start ?? null)};
           const endData = ${JSON.stringify(end ?? null)};
           const pathData = ${JSON.stringify(path ?? [])};
-
           const hasPath = Array.isArray(pathData) && pathData.length > 0;
 
-          // 지도 중심 좌표 결정
           let centerLat = 37.5665;
           let centerLng = 126.9780;
 
@@ -86,10 +81,73 @@ export function createKakaoMapHtml({
           };
 
           const map = new kakao.maps.Map(container, options);
+          let currentLocationMarker = null;
+          let routePolyline = null;
 
-          let currentMarker = null;
+          // 현재 위치 마커가 없으면 최초 1회 생성하고, 있으면 위치만 갱신하는 함수입니다.
+          function updateCurrentLocationMarker(latitude, longitude) {
+            const nextLatLng = new kakao.maps.LatLng(latitude, longitude);
 
-          // 1. 경로 모드
+            if (currentLocationMarker) {
+              currentLocationMarker.setPosition(nextLatLng);
+              return;
+            }
+
+            currentLocationMarker = new kakao.maps.Marker({
+              position: nextLatLng,
+              title: singleMarker.markerTitle,
+            });
+            currentLocationMarker.setMap(map);
+          }
+
+          // 현재 지도에 그려진 경로 폴리라인을 제거하고 참조를 초기화하는 함수입니다.
+          function clearRoutePolyline() {
+            if (!routePolyline) {
+              return;
+            }
+
+            routePolyline.setMap(null);
+            routePolyline = null;
+          }
+
+          // React Native WebView에서 보낸 현재 위치 변경 메시지를 처리하는 함수입니다.
+          function handleCurrentLocationMessage(event) {
+            try {
+              const data =
+                typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+
+              if (
+                data &&
+                data.type === "UPDATE_CURRENT_LOCATION" &&
+                typeof data.latitude === "number" &&
+                typeof data.longitude === "number"
+              ) {
+                if (data.clearPolyline === true) {
+                  clearRoutePolyline();
+                }
+
+                updateCurrentLocationMarker(data.latitude, data.longitude);
+              }
+
+              if (
+                data &&
+                data.type === "CENTER_ON_CURRENT_LOCATION" &&
+                typeof data.latitude === "number" &&
+                typeof data.longitude === "number"
+              ) {
+                const currentLatLng = new kakao.maps.LatLng(
+                  data.latitude,
+                  data.longitude
+                );
+
+                updateCurrentLocationMarker(data.latitude, data.longitude);
+                map.setCenter(currentLatLng);
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }
+
           if (hasPath) {
             const bounds = new kakao.maps.LatLngBounds();
 
@@ -99,7 +157,7 @@ export function createKakaoMapHtml({
               return latLng;
             });
 
-            const polyline = new kakao.maps.Polyline({
+            routePolyline = new kakao.maps.Polyline({
               path: linePath,
               strokeWeight: 5,
               strokeColor: "#2563EB",
@@ -107,7 +165,7 @@ export function createKakaoMapHtml({
               strokeStyle: "solid",
             });
 
-            polyline.setMap(map);
+            routePolyline.setMap(map);
 
             if (startData) {
               const startPosition = new kakao.maps.LatLng(startData.lat, startData.lng);
@@ -146,50 +204,15 @@ export function createKakaoMapHtml({
             }
 
             map.setBounds(bounds);
-          }
-
-          // 2. 단일 마커 모드
-          else if (
+          } else if (
             singleMarker.latitude !== null &&
             singleMarker.longitude !== null
           ) {
-            const markerPosition = new kakao.maps.LatLng(
-              singleMarker.latitude,
-              singleMarker.longitude
-            );
-
-            currentMarker = new kakao.maps.Marker({
-              position: markerPosition,
-              title: singleMarker.markerTitle,
-            });
-
-            currentMarker.setMap(map);
+            updateCurrentLocationMarker(singleMarker.latitude, singleMarker.longitude);
           }
 
-          // 3. 현재 위치 갱신 메시지 처리
-          // 경로 모드에서는 보통 안 쓰고, 단일 마커 모드에서만 주로 사용
-          window.addEventListener("message", function (event) {
-            try {
-              const data = JSON.parse(event.data);
-
-              if (
-                data.type === "UPDATE_LOCATION" &&
-                currentMarker &&
-                typeof data.latitude === "number" &&
-                typeof data.longitude === "number"
-              ) {
-                const nextLatLng = new kakao.maps.LatLng(
-                  data.latitude,
-                  data.longitude
-                );
-
-                map.setCenter(nextLatLng);
-                currentMarker.setPosition(nextLatLng);
-              }
-            } catch (e) {
-              console.error(e);
-            }
-          });
+          document.addEventListener("message", handleCurrentLocationMessage);
+          window.addEventListener("message", handleCurrentLocationMessage);
         })();
       </script>
     </body>
