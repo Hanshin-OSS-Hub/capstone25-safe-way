@@ -1,0 +1,46 @@
+# 배포용 yml 문서
+# pgadmin 제거했고 수동 배포 예정
+services:
+  postgres:
+    image: pgrouting/pgrouting:15-3.5-main
+    container_name: safeway-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7
+    container_name: safeway-redis
+    restart: always
+
+  backend:
+    container_name: safeway-backend
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "18080:8080"
+    environment:
+      # 컨테이너 내부에서 postgres는 localhost가 아니라 "서비스명(postgres)" 로 접근합니다.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+
+      # Redis도 마찬가지로 "redis"
+      SPRING_DATA_REDIS_HOST: ${SPRING_DATA_REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${SPRING_DATA_REDIS_PORT}
+
+      # (선택) 스프링 포트
+      SERVER_PORT: ${SERVER_PORT}
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
