@@ -38,6 +38,10 @@ services:
 
       # (선택) 스프링 포트
       SERVER_PORT: ${SERVER_PORT}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
     depends_on:
       - postgres
       - redis

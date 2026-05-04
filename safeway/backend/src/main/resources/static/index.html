@@ -30,7 +30,7 @@
 
     function loginWithKakao() {
         Kakao.Auth.authorize({
-            redirectUri: 'http://localhost:8080/callback'
+            redirectUri: `${window.location.origin}/callback`
         });
     }
 </script>

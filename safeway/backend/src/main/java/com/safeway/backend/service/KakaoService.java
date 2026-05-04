@@ -2,6 +2,7 @@ package com.safeway.backend.service;
 import com.safeway.backend.service.dto.KakaoUserResponse;
 import com.safeway.backend.service.dto.PlaceSearchResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -18,6 +19,15 @@ public class KakaoService {
 
     private final WebClient webClient; // WebClientConfig에서 등록한 빈 주입
 
+    @Value("${kakao.client-id}")
+    private String kakaoClientId;
+
+    @Value("${kakao.redirect-uri}")
+    private String kakaoRedirectUri;
+
+    @Value("${kakao.rest-api-key}")
+    private String kakaoRestApiKey;
+
     public KakaoUserResponse getUserInfo(String accessToken) {
         return webClient.get()
                 .uri("https://kapi.kakao.com/v2/user/me")
@@ -26,12 +36,13 @@ public class KakaoService {
                 .bodyToMono(KakaoUserResponse.class)
                 .block(); // 실무에서는 예외 처리가 필수지만, 우선 동작 위주로 구성
     }
+
     // 인가 코드를 카카오 서버에 주고 액세스 토큰을 받아오는 로직
     public String getAccessToken(String code) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
-        formData.add("client_id", "REMOVED"); // REST API 키
-        formData.add("redirect_uri", "http://localhost:8080/callback");
+        formData.add("client_id", kakaoClientId); // REST API 키
+        formData.add("redirect_uri", kakaoRedirectUri);
         formData.add("code", code);
 
         Map response = webClient.post()
@@ -44,6 +55,7 @@ public class KakaoService {
 
         return response.get("access_token").toString();
     }
+
     @SuppressWarnings("unchecked")
     public Map<String, Object> getAddressFromCoords(String x, String y) {
         return webClient.get()
@@ -54,7 +66,7 @@ public class KakaoService {
                         .queryParam("x", x) // 경도
                         .queryParam("y", y) // 위도
                         .build())
-                .header("Authorization", "KakaoAK REMOVED")
+                .header("Authorization", "KakaoAK " + kakaoRestApiKey)
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block();
@@ -70,7 +82,7 @@ public class KakaoService {
                         .path("/v2/local/search/keyword.json")
                         .queryParam("query", keyword) // 사용자가 입력한 키워드 (예: 병점역)
                         .build())
-                .header("Authorization", "KakaoAK REMOVED") // 기존 키 사용
+                .header("Authorization", "KakaoAK " + kakaoRestApiKey) // 기존 키 사용
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block(); // 결과를 기다림
