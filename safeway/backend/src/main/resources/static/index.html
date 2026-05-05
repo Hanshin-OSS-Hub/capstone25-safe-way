@@ -26,9 +26,23 @@
 </div>
 
 <script>
-    Kakao.init('REMOVED'); // JavaScript 키
+    let kakaoInitialized = false;
 
-    function loginWithKakao() {
+    async function initializeKakao() {
+        if (kakaoInitialized) {
+            return;
+        }
+
+        const response = await fetch('/config/kakao');
+        const config = await response.json();
+
+        Kakao.init(config.javascriptKey); // JavaScript key
+        kakaoInitialized = true;
+    }
+
+    async function loginWithKakao() {
+        await initializeKakao();
+
         Kakao.Auth.authorize({
             redirectUri: `${window.location.origin}/callback`
         });

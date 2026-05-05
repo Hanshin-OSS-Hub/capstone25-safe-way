@@ -4,6 +4,7 @@ import com.safeway.backend.service.AuthService;
 import com.safeway.backend.service.KakaoService;
 import com.safeway.backend.service.dto.PlaceSearchResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,14 @@ public class KakaoController {
 
     private final AuthService authService;
     private final KakaoService kakaoService;
+
+    @Value("${kakao.javascript-key}")
+    private String kakaoJavascriptKey;
+
+    @GetMapping("/config/kakao")
+    public Map<String, String> kakaoConfig() {
+        return Map.of("javascriptKey", kakaoJavascriptKey);
+    }
 
     @PostMapping("/auth/kakao/login")
     public String login(@RequestBody Map<String, String> request) {

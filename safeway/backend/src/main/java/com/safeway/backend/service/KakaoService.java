@@ -19,9 +19,6 @@ public class KakaoService {
 
     private final WebClient webClient; // WebClientConfig에서 등록한 빈 주입
 
-    @Value("${kakao.client-id}")
-    private String kakaoClientId;
-
     @Value("${kakao.redirect-uri}")
     private String kakaoRedirectUri;
 
@@ -41,7 +38,7 @@ public class KakaoService {
     public String getAccessToken(String code) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "authorization_code");
-        formData.add("client_id", kakaoClientId); // REST API 키
+        formData.add("client_id", kakaoRestApiKey); // REST API 키
         formData.add("redirect_uri", kakaoRedirectUri);
         formData.add("code", code);
 

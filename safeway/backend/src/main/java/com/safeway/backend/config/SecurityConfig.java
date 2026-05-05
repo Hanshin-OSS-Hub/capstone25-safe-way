@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
+                                "/config/kakao",
                                 "/auth/**",
                                 "/callback/**",
                                 "/v3/api-docs/**",
