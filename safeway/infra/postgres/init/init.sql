@@ -119,7 +119,7 @@ BEGIN
     RETURN
         distance * (
             1.0
-            + (GREATEST(slope, 0) * 0.25)
+            + (GREATEST(slope, 0) * 0.10)
             + (GREATEST(-slope, 0) * 0.05)
         );
 END;
