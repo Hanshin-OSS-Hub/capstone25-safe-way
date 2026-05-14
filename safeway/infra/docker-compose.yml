@@ -4,9 +4,9 @@ services:
     container_name: safeway-postgres
     restart: always
     environment:
-      POSTGRES_DB: safeway
-      POSTGRES_USER: safeway
-      POSTGRES_PASSWORD: REMOVED
+      POSTGRES_DB: ${POSTGRES_DB:-safeway}
+      POSTGRES_USER: ${POSTGRES_USER:-safeway}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -24,8 +24,8 @@ services:
     container_name: safeway-pgadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: REMOVED
-      PGADMIN_DEFAULT_PASSWORD: REMOVED
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
     depends_on:
@@ -41,9 +41,9 @@ services:
       - "18080:8080"
     environment:
       # 컨테이너 내부에서 postgres는 localhost가 아니라 "서비스명(postgres)" 로 접근합니다.
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/safeway
-      SPRING_DATASOURCE_USERNAME: safeway
-      SPRING_DATASOURCE_PASSWORD: REMOVED
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-safeway}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-safeway}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
 
       # Redis도 마찬가지로 "redis"
       SPRING_DATA_REDIS_HOST: redis
@@ -51,6 +51,7 @@ services:
 
       # (선택) 스프링 포트
       SERVER_PORT: 8080
+      JWT_SECRET: ${JWT_SECRET}
       KAKAO_JAVASCRIPT_KEY: ${KAKAO_JAVASCRIPT_KEY:-}
       KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY:-}
       KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:-http://localhost:18080/callback}

@@ -94,7 +94,7 @@ docker compose ps
 |-----|-----|
 | DB 이름 | safeway |
 | 사용자 | safeway |
-| 비밀번호 | REMOVED |
+| 비밀번호 | .env 파일 참고 |
 | 포트 | 5432 |
 
 ---
@@ -111,8 +111,8 @@ pgAdmin 로그인 정보
 
 | 항목 | 값 |
 |-----|-----|
-| Email | REMOVED |
-| Password | REMOVED |
+| Email |  .env 파일 참고 (PGADMIN_DEFAULT_EMAIL) |
+| Password | .env 파일 참고 (PGADMIN_DEFAULT_PASSWORD) |
 
 ---
 
@@ -140,7 +140,7 @@ Name: safeway-postgres
 | Port | 5432 |
 | Maintenance DB | safeway |
 | Username | safeway |
-| Password | REMOVED |
+| Password | .env 파일 참고 (POSTGRES_PASSWORD)  |
 
 ⚠️ 주의
 
